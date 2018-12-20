@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
+import corrector
 
 UPLOAD_DIR = './uploads/new/'
 
@@ -9,9 +10,9 @@ def upload():
     if request.method == 'GET':
         return render_template('uploadpage.html')
     elif request.method == 'POST':
+        result = []
         for img in request.files.getlist('file'):
-            # Do something?
-            img.save(UPLOAD_DIR + img.filename)
-        return 'file uploaded successfully'
+            result.append(corrector.eval_img(img))
+        return jsonify(result)
 
 server.run()

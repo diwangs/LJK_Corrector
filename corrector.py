@@ -1,15 +1,9 @@
-# We could use this: https://docs.python.org/3/library/asyncio.html
-# Python 3.7 only tho, what do you think?
-
 import cv2
 import numpy as np
-import os  
 
-while True:
-    for fn in os.listdir('./uploads/new/'):
-        img = cv2.imread('./uploads/new/' + fn)    
-        # Do something
-        print(img[100, 100])
-        # Move it to 'processed'
-        os.rename('./uploads/new/' + fn, './uploads/processed/' + fn)
-        print('Processed: ' + fn)
+def eval_img(img):
+    img_nparray = cv2.imdecode(np.asarray(bytearray(img.read()), dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    # Do something
+    print(img_nparray[100, 100])
+    # Return some JSON data
+    return {'filename':img.filename,'grade':100}
