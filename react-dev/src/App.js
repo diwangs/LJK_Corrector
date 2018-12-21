@@ -5,6 +5,13 @@ import classNames from 'classnames';
 import './App.css';
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      result: null,
+    };
+  }
+
   onDrop = (acceptedFiles, rejectedFiles) => {
     // Each file calls the endpoint asynchronously?
     acceptedFiles.forEach(img => {
@@ -12,11 +19,15 @@ class App extends Component {
       formdata.append("file", img)
       fetch('http://localhost:5000/result', {method: 'POST', body:formdata})
         .then(res => res.json())
-        .then(data => console.log(data))
-        // data is the result 
+        .then(data => {
+          this.setState((state, _) => ({
+            ...state,
+            result: data,
+          }))
+        })
     });
   }
-  
+
   render() {
     return (
       <div className="App">
@@ -38,6 +49,10 @@ class App extends Component {
             )
           }}
         </Dropzone>
+
+        {this.state.result && (
+          <img alt='result' src={'data:image/png;base64,' + this.state.result.encoded} />
+        )}
       </div>
     );
   }
