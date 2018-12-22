@@ -19,4 +19,5 @@ def process():
     return jsonify(result)
 
 
-server.run(debug=True)
+if __name__ == '__main__':
+    server.run(debug=True)
