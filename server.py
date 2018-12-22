@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import corrector
 
@@ -9,7 +9,7 @@ server.config['CORS_HEADERS'] = 'Content-Type'
 
 @server.route('/', methods=['GET'])
 def upload():
-    return render_template('index.html')
+    return 'OK'
 
 
 @server.route('/result', methods=['POST'])

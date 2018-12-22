@@ -17,7 +17,7 @@ class App extends Component {
     acceptedFiles.forEach(img => {
       let formdata = new FormData()
       formdata.append("file", img)
-      fetch('http://localhost:5000/result', {method: 'POST', body:formdata})
+      fetch('http://http://103.216.223.11:18501/result', {method: 'POST', body:formdata})
         .then(res => res.json())
         .then(data => {
           this.setState((state, _) => ({
