@@ -11,7 +11,7 @@ class FileBar extends Component {
         onClick={this.props.onClick}
         idx={this.props.idx}
       >
-        - {this.props.children}
+        {this.props.children}
       </div>
     );
   }
@@ -54,12 +54,24 @@ export default class App extends Component {
   }
 
   onFileBarClick = (e) => {
-    let idx = e.currentTarget.getAttribute('idx');
+    let idx = parseInt(e.currentTarget.getAttribute('idx'));
     this.setState((state, _) => ({
       ...state,
-      activeIdx: parseInt(idx),
+      activeIdx: idx,
       previewImageEncoded: this.state.workingFiles[idx].result.encoded,
     }));
+  }
+
+  onDeleteButtonClick = (e) => {
+    this.setState((state, _) => {
+      let newWorkingFiles = state.workingFiles.slice();
+      newWorkingFiles.splice(state.activeIdx, 1);
+      return {
+        ...state,
+        activeIdx: -1,
+        workingFiles: newWorkingFiles,
+      };
+    });
   }
 
   render() {
@@ -78,8 +90,8 @@ export default class App extends Component {
     });
     return (
       <div className='d-flex flex-col h-100'>
-        <div className='flex-0'>
-          <h1 className='title'>Korektor LJK TONAMPTN</h1>
+        <div className='flex-0 header'>
+          <div className='title'><strong>Korektor LJK TONAMPTN</strong> by Karang Praga </div>
           {this.state.waitingForFiles === 0 && (
             <Dropzone onDrop={this.onDrop} multiple>
               {({getRootProps, getInputProps, isDragActive}) => {
@@ -101,13 +113,18 @@ export default class App extends Component {
           )}
           {this.state.waitingForFiles > 0 && (
             <div className='waiting'>
-              Sedang memroses...
+              <p> Masih memroses {this.state.waitingForFiles} gambar ... </p>
             </div>
           )}
         </div>
 
         <div className='d-flex flex-row flex-1 main'>
-          <div className='filebars d-flex flex-col'>
+          <div className='filebars'>
+            <div className='filebars-title'> Files </div>
+            <div className='filebars-action'>
+              <div> Save </div>
+              <div className='danger' onClick={this.onDeleteButtonClick}> Delete Selected </div>
+            </div>
             {workingFiles}
           </div>
           <div className='preview'>
