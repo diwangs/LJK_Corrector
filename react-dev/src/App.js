@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Dropzone from 'react-dropzone';
 import classNames from 'classnames';
+import config from './config';
 import './App.css';
 
 class FileBar extends Component {
@@ -35,7 +36,7 @@ export default class App extends Component {
         waitingForFiles: state.waitingForFiles + 1,
       }));
       formdata.append('file', img);
-      fetch('http://103.216.223.11:18501/result', { method: 'POST', body: formdata })
+      fetch(config.serverUrl + '/result', { method: 'POST', body: formdata })
         .then(res => res.json())
         .then(data => {
           this.setState((state, _) => ({
