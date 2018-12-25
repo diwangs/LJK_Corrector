@@ -1,7 +1,24 @@
-# Server
-Server will receive images and process them synchronously before returning a JSON result
+# LJK Corrector
 
-# react-dev
-A create-react-app, because there's a dropzone module used. Run `npm run build` and 
-* copy the `static` folder to the root
-* copy the `index.html` to `templates`
+## Setup
+
+### Flask
+
+    pipenv shell
+    pipenv install
+
+### React
+
+    cd react-dev
+    npm install
+
+## Run
+
+### Flask
+
+    python server.py
+
+### React
+
+    cd react-dev
+    npm run start
