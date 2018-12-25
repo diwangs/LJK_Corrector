@@ -9,7 +9,6 @@ class FileBar extends Component {
       <div
         className={classNames('filebar', { 'active': this.props.active })}
         onClick={this.props.onClick}
-        idx={this.props.idx}
       >
         {this.props.children}
       </div>
@@ -29,13 +28,13 @@ export default class App extends Component {
 
   onDrop = (acceptedFiles, rejectedFiles) => {
     acceptedFiles.forEach(img => {
-      let formdata = new FormData();
+      let formData = new FormData();
       this.setState((state, _) => ({
         ...state,
         waitingForFiles: state.waitingForFiles + 1,
       }));
-      formdata.append('file', img);
-      fetch('http://103.216.223.11:18501/result', { method: 'POST', body: formdata })
+      formData.append('file', img);
+      fetch('http://103.216.223.11:18501/result', { method: 'POST', body: formData })
         .then(res => res.json())
         .then(data => {
           this.setState((state, _) => ({
@@ -51,7 +50,7 @@ export default class App extends Component {
           }))
         });
     });
-  }
+  };
 
   onFileBarClick = (e) => {
     let idx = parseInt(e.currentTarget.getAttribute('idx'));
@@ -60,7 +59,7 @@ export default class App extends Component {
       activeIdx: idx,
       previewImageEncoded: this.state.workingFiles[idx].result.encoded,
     }));
-  }
+  };
 
   onDeleteButtonClick = (e) => {
     this.setState((state, _) => {
@@ -72,7 +71,7 @@ export default class App extends Component {
         workingFiles: newWorkingFiles,
       };
     });
-  }
+  };
 
   render() {
     let workingFiles = [];
