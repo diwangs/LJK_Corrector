@@ -10,14 +10,62 @@ class Grader:
 
     def grade(self):
         self.result = dict()
-        self.result['name'] = 'yonas adiel'
-        self.result['number'] = '09-001-910-1'
-        self.result['answer'] = ''.join(['abc  dea a' for _ in range(12)])
+        self.result['name'] = self.__get_name()
+        self.result['number'] = self.__get_number()
+        self.result['answer'] = self.__get_answer()
 
     def get_result(self):
         if (self.result is None):
             self.grade()
         return self.result
+
+    def __get_answer(self):
+        options = 'abcde  '
+        answer = ''
+        # starting position for each 10-numbers answer
+        starts = [
+            (37, 3), (48, 3),
+            (37, 10), (48, 10),
+            (37, 17), (48, 17),
+            (37, 24), (48, 24),
+            (37, 31), (48, 31),
+            (37, 38), (48, 38),
+        ]
+        for start in starts:
+            for i in range(10):
+                answer += options[self.__get_option_horz(row=start[0] + i, col=start[1], size=5)]
+        print(answer)
+        return answer
+
+    def __get_name(self):
+        alphabet = 'abcdefghijklmnopqrstuvwxyz  '
+        name = ''
+        for i in range(20):
+            name += alphabet[self.__get_option_vert(row=9, col=(2 + i), size=26)]
+        return name
+
+    def __get_number(self):
+        numbers = '0123456789  '
+        number = ''
+        for i in [23, 24, 26, 27, 28, 30, 31, 32, 34]:
+            number += numbers[self.__get_option_vert(row=17, col=i, size=10)]
+        # reformat
+        number = number[:2] + '-' + number[2:5] + '-' + number[5:8] + '-' + number[8:]
+        return number
+
+    def __get_option_horz(self, row, col, size):
+        option = -1
+        for i in range(col, col + size):
+            if (self.mat[row][i]):
+                option = (i - col) if (option == -1) else -2
+        return option
+
+    def __get_option_vert(self, row, col, size):
+        option = -1
+        for i in range(row, row + size):
+            if (self.mat[i][col]):
+                option = (i - row) if (option == -1) else -2
+        return option
 
 
 class Image:
