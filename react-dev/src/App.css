@@ -51,7 +51,7 @@
 }
 
 .filebars-title, .filebar {
-  padding: 5px 5px;
+  padding: .75em;
   flex: 0 0;
 }
 
@@ -79,8 +79,6 @@
 
 .filebar {
   cursor: pointer;
-  border-radius: 4px;
-  margin: 4px;
 }
 
 .filebar:hover:not(.active) {
