@@ -85,7 +85,7 @@ export default class App extends Component {
           onClick={this.onFileBarClick}
           active={this.state.activeIdx === idx}
         >
-          {workingFile.filename}
+          {workingFile.result.number}
         </FileBar>
       );
     });
@@ -123,11 +123,21 @@ export default class App extends Component {
           <div className='filebars'>
             <div className='filebars-title'> Files </div>
             <div className='filebars-action'>
-              <div> Save </div>
+              <div> Save as CSV </div>
               <div className='danger' onClick={this.onDeleteButtonClick}> Delete Selected </div>
             </div>
             {workingFiles}
           </div>
+          {this.state.activeIdx > -1 && (
+            <div className='fileinfo'>
+              <div className='fileinfo-title'> Nama </div>
+              <div className='fileinfo-content'> {this.state.workingFiles[this.state.activeIdx].result.name} </div>
+              <div className='fileinfo-title'> Nomor Peserta </div>
+              <div className='fileinfo-content'> {this.state.workingFiles[this.state.activeIdx].result.number} </div>
+              <div className='fileinfo-title'> Jawaban </div>
+              <div className='fileinfo-content'> {this.state.workingFiles[this.state.activeIdx].result.answer} </div>
+            </div>
+          )}
           <div className='preview'>
             {this.state.activeIdx >= 0 && (
               <img alt='result' src={'data:image/png;base64,' + this.state.previewImageEncoded} />

@@ -35,7 +35,7 @@
 
 .filebars {
   width: 30%;
-  max-width: 300px;
+  max-width: 200px;
   overflow-y: auto;
   overflow-x: hidden;
   background-color: rgba(255, 255, 255, 1);
@@ -88,6 +88,21 @@
 .filebar.active {
   background-color: rgba(0, 0, 0, .2);
   cursor: auto;
+}
+
+.fileinfo {
+  width: 30%;
+  max-width: 200px;
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+.fileinfo .fileinfo-title, .fileinfo .fileinfo-content {
+  padding: .75em;
+}
+
+.fileinfo .fileinfo-title {
+  font-weight: 600;
 }
 
 .preview {
