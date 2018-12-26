@@ -3,6 +3,23 @@ import numpy as np
 import base64
 
 
+class Grader:
+    def __init__(self, mat):
+        self.mat = mat
+        self.result = None
+
+    def grade(self):
+        self.result = dict()
+        self.result['name'] = 'yonas adiel'
+        self.result['number'] = '09-001-910-1'
+        self.result['answer'] = ''.join(['abc  dea a' for _ in range(12)])
+
+    def get_result(self):
+        if (self.result is None):
+            self.grade()
+        return self.result
+
+
 class Image:
     CELL_MARGIN = 0.2
     FILLED_PERCENTAGE = 50
@@ -19,36 +36,41 @@ class Image:
         self.result_image = self.original_image.copy()
         self.working_image = self.original_image.copy()
         self.key_points = None
+        self.ljk_mat = None
 
     def get_base64_result_image(self):
         encoded = cv2.imencode('.png', self.result_image)[1].tostring()
         result = base64.b64encode(encoded).decode('utf-8')
         return str(result)
 
+    def get_result(self):
+        grader = Grader(self.ljk_mat)
+        result = grader.get_result()
+        result['encoded'] = self.get_base64_result_image()
+        return result
+
     def process(self):
         self.__resize()
         self.__threshold()
-        self.__find_key_points(draw_key=False)
+        self.__find_key_points()
         self.__detect_and_wrap_corner()
-        self.__find_key_points(draw_key=True)
+        self.__find_key_points()
         self.__create_answer_matrix()
-        # self.__draw_key_points()
 
     def __create_answer_matrix(self):
         offset = int(self.IMG_WIDTH / (self.COL) / 2)
-        ljk_mat = [[0 for i in range(self.COL)] for j in range(self.ROW)]
+        self.ljk_mat = [[0 for i in range(self.COL)] for j in range(self.ROW)]
         height = self.working_image.shape[0]
         width = self.working_image.shape[1]
 
         for key_point in self.key_points:
             point = key_point.pt
-            ljk_mat[int(point[1] * self.ROW / height)][int(point[0] * self.COL / width)] = 1
+            self.ljk_mat[int(point[1] * self.ROW / height)][int(point[0] * self.COL / width)] = 1
         for i in range(0, self.ROW):
             for j in range(0, self.COL):
-                if (ljk_mat[i][j]):
+                if (self.ljk_mat[i][j]):
                     r, c = self.__get_coordinate_from_indices(i, j)
                     cv2.rectangle(self.result_image, (c, r), (c + offset * 2, r + offset * 2), 128, 5)
-        return ljk_mat
 
     def __detect_and_wrap_corner(self):
         points = self.__find_four_key_point()
@@ -82,7 +104,7 @@ class Image:
         self.working_image = cv2.warpPerspective(self.working_image, matrix, out_size)
         self.result_image = cv2.warpPerspective(self.result_image, matrix, out_size)
 
-    def __find_key_points(self, draw_key=False):
+    def __find_key_points(self):
         img = self.working_image.copy()
         blur_radius = self.IMG_WIDTH // 100 * 2 + 1
         img = cv2.GaussianBlur(img, (blur_radius, blur_radius), 0)
@@ -164,8 +186,4 @@ def eval_img(raw_img):
     img = cv2.imdecode(np.fromstring(raw_img, np.uint8), cv2.IMREAD_UNCHANGED)
     image = Image(img)
     image.process()
-    return {
-        'filename': 'mock',
-        'grade': 100,
-        'encoded': image.get_base64_result_image()
-    }
+    return image.get_result()
