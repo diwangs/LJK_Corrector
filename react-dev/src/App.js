@@ -28,6 +28,15 @@ export default class App extends Component {
     };
   }
 
+  convertAnser = (answer) => {
+    let answerShown = '';
+    while (answer.length > 0) {
+      answerShown += answer.substring(0, 10) + '\n';
+      answer = answer.substring(10);
+    }
+    return answerShown;
+  }
+
   onDrop = (acceptedFiles, rejectedFiles) => {
     acceptedFiles.forEach(img => {
       let formdata = new FormData();
@@ -46,7 +55,10 @@ export default class App extends Component {
               ...state.workingFiles,
               {
                 filename: img.name,
-                result: data,
+                result: {
+                  ...data,
+                  answerShown: this.convertAnser(data.answer),
+                },
               }
             ]
           }))
@@ -135,7 +147,11 @@ export default class App extends Component {
               <div className='fileinfo-title'> Nomor Peserta </div>
               <div className='fileinfo-content'> {this.state.workingFiles[this.state.activeIdx].result.number} </div>
               <div className='fileinfo-title'> Jawaban </div>
-              <div className='fileinfo-content'> {this.state.workingFiles[this.state.activeIdx].result.answer} </div>
+              <div className='fileinfo-content'>
+                <pre>
+                  {this.state.workingFiles[this.state.activeIdx].result.answerShown}
+                </pre>
+              </div>
             </div>
           )}
           <div className='preview'>
