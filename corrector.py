@@ -3,12 +3,77 @@ import numpy as np
 import base64
 
 
+class Grader:
+    def __init__(self, mat):
+        self.mat = mat
+        self.result = None
+
+    def grade(self):
+        self.result = dict()
+        self.result['name'] = self.__get_name()
+        self.result['number'] = self.__get_number()
+        self.result['answer'] = self.__get_answer()
+
+    def get_result(self):
+        if (self.result is None):
+            self.grade()
+        return self.result
+
+    def __get_answer(self):
+        options = 'abcde  '
+        answer = ''
+        # starting position for each 10-numbers answer
+        starts = [
+            (37, 3), (48, 3),
+            (37, 10), (48, 10),
+            (37, 17), (48, 17),
+            (37, 24), (48, 24),
+            (37, 31), (48, 31),
+            (37, 38), (48, 38),
+        ]
+        for start in starts:
+            for i in range(10):
+                answer += options[self.__get_option_horz(row=start[0] + i, col=start[1], size=5)]
+        print(answer)
+        return answer
+
+    def __get_name(self):
+        alphabet = 'abcdefghijklmnopqrstuvwxyz  '
+        name = ''
+        for i in range(20):
+            name += alphabet[self.__get_option_vert(row=9, col=(2 + i), size=26)]
+        return name
+
+    def __get_number(self):
+        numbers = '0123456789  '
+        number = ''
+        for i in [23, 24, 26, 27, 28, 30, 31, 32, 34]:
+            number += numbers[self.__get_option_vert(row=17, col=i, size=10)]
+        # reformat
+        number = number[:2] + '-' + number[2:5] + '-' + number[5:8] + '-' + number[8:]
+        return number
+
+    def __get_option_horz(self, row, col, size):
+        option = -1
+        for i in range(col, col + size):
+            if (self.mat[row][i]):
+                option = (i - col) if (option == -1) else -2
+        return option
+
+    def __get_option_vert(self, row, col, size):
+        option = -1
+        for i in range(row, row + size):
+            if (self.mat[i][col]):
+                option = (i - row) if (option == -1) else -2
+        return option
+
+
 class Image:
     CELL_MARGIN = 0.2
     FILLED_PERCENTAGE = 50
     IMG_WIDTH = 1000
     LJK_RATIO = 19.2 / 26
-    MIN_CIRCULARITY = 0.50
+    MIN_CIRCULARITY = 0.75
     ROW, COL = 60, 43
 
     def __init__(self, img):
@@ -18,46 +83,49 @@ class Image:
         self.original_ratio = self.original_width * 1.0 / self.original_height
         self.result_image = self.original_image.copy()
         self.working_image = self.original_image.copy()
+        self.key_points = None
+        self.ljk_mat = None
 
     def get_base64_result_image(self):
         encoded = cv2.imencode('.png', self.result_image)[1].tostring()
         result = base64.b64encode(encoded).decode('utf-8')
         return str(result)
 
+    def get_result(self):
+        grader = Grader(self.ljk_mat)
+        result = grader.get_result()
+        result['encoded'] = self.get_base64_result_image()
+        return result
+
     def process(self):
         self.__resize()
         self.__threshold()
+        self.__find_key_points()
         self.__detect_and_wrap_corner()
+        self.__find_key_points()
         self.__create_answer_matrix()
 
     def __create_answer_matrix(self):
         offset = int(self.IMG_WIDTH / (self.COL) / 2)
-        ljk_mat = [[0 for i in range(self.COL)] for j in range(self.ROW)]
+        self.ljk_mat = [[0 for i in range(self.COL)] for j in range(self.ROW)]
+        height = self.working_image.shape[0]
+        width = self.working_image.shape[1]
+
+        for key_point in self.key_points:
+            point = key_point.pt
+            self.ljk_mat[int(point[1] * self.ROW / height)][int(point[0] * self.COL / width)] = 1
         for i in range(0, self.ROW):
             for j in range(0, self.COL):
-                r, c = self.__get_coordinate_from_indices(i, j)
-                if (self.__is_filled(i, j)):
+                if (self.ljk_mat[i][j]):
+                    r, c = self.__get_coordinate_from_indices(i, j)
                     cv2.rectangle(self.result_image, (c, r), (c + offset * 2, r + offset * 2), 128, 5)
-                    ljk_mat[i][j] = 1
-        return ljk_mat
 
     def __detect_and_wrap_corner(self):
-        img = self.working_image.copy()
-        blur_radius = self.IMG_WIDTH // 100 * 2 + 1
-        img = cv2.GaussianBlur(img, (blur_radius, blur_radius), 0)
-        r, img = cv2.threshold(img, 180, 255, cv2.THRESH_BINARY)
-
-        kp, points = self.__find_four_key_point(img, self.MIN_CIRCULARITY)
-
-        # self.working_image = cv2.drawKeypoints(
-        #     img, kp, np.array([]), (0, 0, 255),
-        #     cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-        # cv2.imshow('image', img_with_keypoints)
-        # cv2.waitKey(0)
+        points = self.__find_four_key_point()
 
         # sort clockwise from top-left
         def cmp(point):
-            center = img.shape[1] / 2, img.shape[0] / 2
+            center = self.working_image.shape[1] / 2, self.working_image.shape[0] / 2
             if point[0] < center[0]:
                 if (point[1] < center[1]):
                     return 0
@@ -84,29 +152,42 @@ class Image:
         self.working_image = cv2.warpPerspective(self.working_image, matrix, out_size)
         self.result_image = cv2.warpPerspective(self.result_image, matrix, out_size)
 
-    def __find_four_key_point(self, img, circularity):
-        # find 4 keypoint from image with known minimum circularity
-        # on the blob detector
+    def __find_key_points(self):
+        img = self.working_image.copy()
+        blur_radius = self.IMG_WIDTH // 100 * 2 + 1
+        img = cv2.GaussianBlur(img, (blur_radius, blur_radius), 0)
+        r, img = cv2.threshold(img, 180, 255, cv2.THRESH_BINARY)
+        img_width = img.shape[1]
+
         params = cv2.SimpleBlobDetector_Params()
 
         params.filterByCircularity = True
-        params.minCircularity = circularity
+        params.minCircularity = self.MIN_CIRCULARITY
         params.maxCircularity = 1
 
         params.filterByConvexity = True
         params.minConvexity = 0.85
 
         params.filterByArea = True
-        params.minArea = self.working_image.shape[0] * img.shape[1] // 10000
+        params.minArea = (img_width * 0.6 // self.COL) ** 2
 
         det = cv2.SimpleBlobDetector_create(params)
-        kp = det.detect(img)
+        self.key_points = det.detect(img)
 
-        if (len(kp) == 0):
-            return [], []
+    def __find_four_key_point(self):
+        if (self.key_points is None):
+            self.__find_key_points()
 
-        hulls = cv2.convexHull(cv2.KeyPoint_convert(kp))
-        points = [[img.shape[0], img.shape[1]], [0, img.shape[1]], [img.shape[0], 0], [0, 0]]
+        if (len(self.key_points) == 0):
+            return []
+
+        hulls = cv2.convexHull(cv2.KeyPoint_convert(self.key_points))
+        points = [
+            [self.working_image.shape[0], self.working_image.shape[1]],
+            [0, self.working_image.shape[1]],
+            [self.working_image.shape[0], 0],
+            [0, 0]
+        ]
         for hull in hulls:
             if (hull[0][0] + hull[0][1] < points[0][0] + points[0][1]):
                 points[0] = hull[0]
@@ -117,8 +198,10 @@ class Image:
             if (hull[0][0] + hull[0][1] > points[3][0] + points[3][1]):
                 points[3] = hull[0]
 
+        # edited because of LJK bad format, which doesn't provide
+        # right-bottom dots.
         points[3] = [points[1][0], points[2][1]]
-        return kp, points
+        return points
 
     def __get_coordinate_from_indices(self, row, col):
         t_row = self.working_image.shape[0]
@@ -128,27 +211,6 @@ class Image:
         c = int(col * t_col / self.COL)
 
         return r, c
-
-    def __is_filled(self, row, col):
-        width = int(self.IMG_WIDTH / (self.COL))
-
-        r_top, c_lft = self.__get_coordinate_from_indices(row, col)
-        r_btm = r_top + width
-        c_rgt = c_lft + width
-
-        r_top += int(self.CELL_MARGIN * width)
-        c_lft += int(self.CELL_MARGIN * width)
-        r_btm -= int(self.CELL_MARGIN * width)
-        c_rgt -= int(self.CELL_MARGIN * width)
-
-        cnt_black = 0
-        for r_i in range(r_top, r_btm + 1):
-            for c_i in range(c_lft, c_rgt + 1):
-                if (self.working_image[r_i][c_i] < 120):
-                    cnt_black += 1
-
-        filled_percentage = cnt_black * 100 / ((r_btm - r_top + 1) * (c_rgt - c_lft + 1))
-        return (filled_percentage >= self.FILLED_PERCENTAGE)
 
     def __threshold(self):
         self.working_image = cv2.cvtColor(self.working_image, cv2.COLOR_BGR2GRAY)
@@ -172,8 +234,4 @@ def eval_img(raw_img):
     img = cv2.imdecode(np.fromstring(raw_img, np.uint8), cv2.IMREAD_UNCHANGED)
     image = Image(img)
     image.process()
-    return {
-        'filename': 'mock',
-        'grade': 100,
-        'encoded': image.get_base64_result_image()
-    }
+    return image.get_result()

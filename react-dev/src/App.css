@@ -35,7 +35,7 @@
 
 .filebars {
   width: 30%;
-  max-width: 300px;
+  max-width: 200px;
   overflow-y: auto;
   overflow-x: hidden;
   background-color: rgba(255, 255, 255, 1);
@@ -51,7 +51,7 @@
 }
 
 .filebars-title, .filebar {
-  padding: 5px 5px;
+  padding: .75em;
   flex: 0 0;
 }
 
@@ -79,8 +79,6 @@
 
 .filebar {
   cursor: pointer;
-  border-radius: 4px;
-  margin: 4px;
 }
 
 .filebar:hover:not(.active) {
@@ -89,11 +87,28 @@
 
 .filebar.active {
   background-color: rgba(0, 0, 0, .2);
+  cursor: auto;
+}
+
+.fileinfo {
+  width: 30%;
+  max-width: 200px;
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+.fileinfo .fileinfo-title, .fileinfo .fileinfo-content {
+  padding: .75em;
+}
+
+.fileinfo .fileinfo-title {
+  font-weight: 600;
 }
 
 .preview {
   flex: 1 1;
-  overflow-y: auto;
+  overflow-y: hidden;
   text-align: center;
   padding: 20px;
   background-color: rgba(130, 130, 130, 1);
@@ -101,7 +116,8 @@
 
 .preview img {
   box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 1);
-  max-width: 300px;
+  max-height: 100%;
+  overflow-y: hidden;
 }
 
 /** flex and stuff **/
