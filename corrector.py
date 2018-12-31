@@ -20,7 +20,7 @@ class Grader:
         return self.result
 
     def __get_answer(self):
-        options = 'abcde  '
+        options = 'abcde__'
         answer = ''
         # starting position for each 10-numbers answer
         starts = [
@@ -37,14 +37,14 @@ class Grader:
         return answer
 
     def __get_name(self):
-        alphabet = 'abcdefghijklmnopqrstuvwxyz  '
+        alphabet = 'abcdefghijklmnopqrstuvwxyz__'
         name = ''
         for i in range(20):
             name += alphabet[self.__get_option_vert(row=9, col=(2 + i), size=26)]
         return name
 
     def __get_number(self):
-        numbers = '0123456789  '
+        numbers = '0123456789__'
         number = ''
         for i in [23, 24, 26, 27, 28, 30, 31, 32, 34]:
             number += numbers[self.__get_option_vert(row=17, col=i, size=10)]
