@@ -34,7 +34,6 @@ class Grader:
         for start in starts:
             for i in range(10):
                 answer += options[self.__get_option_horz(row=start[0] + i, col=start[1], size=5)]
-        print(answer)
         return answer
 
     def __get_name(self):
@@ -69,11 +68,8 @@ class Grader:
 
 
 class Image:
-    CELL_MARGIN = 0.2
-    FILLED_PERCENTAGE = 50
     IMG_WIDTH = 1000
     LJK_RATIO = 19.2 / 26
-    MIN_CIRCULARITY = 0.75
     ROW, COL = 60, 43
 
     def __init__(self, img):
@@ -102,7 +98,7 @@ class Image:
         self.__threshold()
         self.__find_key_points()
         self.__detect_and_wrap_corner()
-        self.__find_key_points()
+        self.__find_key_points(blur=False, update_result=False)
         self.__create_answer_matrix()
 
     def __create_answer_matrix(self):
@@ -118,7 +114,7 @@ class Image:
             for j in range(0, self.COL):
                 if (self.ljk_mat[i][j]):
                     r, c = self.__get_coordinate_from_indices(i, j)
-                    cv2.rectangle(self.result_image, (c, r), (c + offset * 2, r + offset * 2), 128, 5)
+                    cv2.rectangle(self.result_image, (c, r), (c + offset * 2, r + offset * 2), 128, 2)
 
     def __detect_and_wrap_corner(self):
         points = self.__find_four_key_point()
@@ -152,31 +148,34 @@ class Image:
         self.working_image = cv2.warpPerspective(self.working_image, matrix, out_size)
         self.result_image = cv2.warpPerspective(self.result_image, matrix, out_size)
 
-    def __find_key_points(self):
+    def __find_key_points(self, blur=True, min_circularity=0.75, min_convexity=0.85, update_result=False):
         img = self.working_image.copy()
-        blur_radius = self.IMG_WIDTH // 100 * 2 + 1
-        img = cv2.GaussianBlur(img, (blur_radius, blur_radius), 0)
-        r, img = cv2.threshold(img, 180, 255, cv2.THRESH_BINARY)
+        if (blur):
+            blur_radius = int(((self.IMG_WIDTH * 0.75 / 2) // self.COL) * 2 + 1)
+            img = cv2.GaussianBlur(img, (blur_radius, blur_radius), 0)
+        # r, img = cv2.threshold(img, 180, 255, cv2.THRESH_BINARY)
         img_width = img.shape[1]
 
         params = cv2.SimpleBlobDetector_Params()
 
         params.filterByCircularity = True
-        params.minCircularity = self.MIN_CIRCULARITY
+        params.minCircularity = min_circularity
         params.maxCircularity = 1
 
         params.filterByConvexity = True
-        params.minConvexity = 0.85
+        params.minConvexity = min_convexity
 
         params.filterByArea = True
-        params.minArea = (img_width * 0.6 // self.COL) ** 2
+        params.minArea = (img_width * 0.65 // self.COL) ** 2
 
         det = cv2.SimpleBlobDetector_create(params)
         self.key_points = det.detect(img)
+        if (update_result):
+            self.result_image = img
 
     def __find_four_key_point(self):
         if (self.key_points is None):
-            self.__find_key_points()
+            self.__find_key_points(min_circularity=0.5, min_convexity=0.3)
 
         if (len(self.key_points) == 0):
             return []
@@ -214,14 +213,17 @@ class Image:
 
     def __threshold(self):
         self.working_image = cv2.cvtColor(self.working_image, cv2.COLOR_BGR2GRAY)
-        self.working_image = cv2.GaussianBlur(self.working_image, (11, 11), 0)
-        self.working_image = cv2.adaptiveThreshold(
-            src=self.working_image,
-            maxValue=255,
-            adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            thresholdType=cv2.THRESH_BINARY,
-            blockSize=25,
-            C=12)
+        blur_radius = int(self.IMG_WIDTH * 0.8 / 2 / self.COL) * 2 + 1
+        self.working_image = cv2.GaussianBlur(self.working_image, (blur_radius, blur_radius), 0)
+        # _, self.working_image = cv2.threshold(self.working_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        # self.working_image = cv2.adaptiveThreshold(
+        #     src=self.working_image,
+        #     maxValue=255,
+        #     adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        #     thresholdType=cv2.THRESH_BINARY,
+        #     blockSize=11,
+        #     C=2)
+        self.result_image = self.working_image
 
     def __resize(self):
         self.working_image = cv2.resize(
