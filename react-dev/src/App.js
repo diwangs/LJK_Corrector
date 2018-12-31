@@ -172,7 +172,9 @@ export default class App extends Component {
                 <div onClick={this.onSaveAsCsvButtonClick}> Save as CSV</div>
                 <div className='danger' onClick={this.onDeleteButtonClick}> Delete Selected</div>
               </div>
-              {workingFiles}
+              <div className='filebars-files'>
+                {workingFiles}
+              </div>
             </div>
             {this.state.activeIdx > -1 && (
                 <div className='fileinfo'>

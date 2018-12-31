@@ -52,7 +52,6 @@
 
 .filebars-title, .filebar {
   padding: .75em;
-  flex: 0 0;
 }
 
 .filebars-action {
@@ -75,6 +74,11 @@
 
 .filebars-action div.danger {
   background-color: rgba(255, 36, 36, 1);
+}
+
+.filebars-files {
+  flex: 1 1;
+  overflow-y: auto;
 }
 
 .filebar {
