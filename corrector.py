@@ -223,7 +223,7 @@ class Image:
         #     thresholdType=cv2.THRESH_BINARY,
         #     blockSize=11,
         #     C=2)
-        self.result_image = self.working_image
+        # self.result_image = self.working_image
 
     def __resize(self):
         self.working_image = cv2.resize(
