@@ -28,19 +28,8 @@ export default class App extends Component {
     };
   }
 
-  convertAnswer = (answer) => {
-    console.log(answer);
-    let answerShown = '';
-    while (answer.length > 0) {
-      answerShown += answer.substring(0, 10) + '\n';
-      answer = answer.substring(10);
-    }
-    return answerShown;
-  };
-
   getCsvFromFiles = (files) => {
     let result = "";
-    console.log(files);
     files.forEach((file) => {
       let arrAnswer = file.result.answer.split("");
       let counter = 0;
@@ -84,10 +73,7 @@ export default class App extends Component {
                 ...state.workingFiles,
                 {
                   filename: img.name,
-                  result: {
-                    ...data,
-                    answerShown: this.convertAnswer(data.answer),
-                  },
+                  result: data,
                 }
               ]
             }))
@@ -119,6 +105,19 @@ export default class App extends Component {
   onSaveAsCsvButtonClick = (e) => {
     let csv = this.getCsvFromFiles(this.state.workingFiles);
     this.downloadCsv(csv, "jawaban.csv");
+  };
+
+  handleChange = (e) => {
+    let newValue = e.currentTarget.value;
+    let key = e.currentTarget.getAttribute('name');
+    this.setState((state, _) => {
+      let newWorkingFiles = state.workingFiles.slice();
+      newWorkingFiles[state.activeIdx].result[key] = newValue;
+      return {
+        ...state,
+        workingFiles: newWorkingFiles,
+      };
+    });
   };
 
   render() {
@@ -178,17 +177,29 @@ export default class App extends Component {
             </div>
             {this.state.activeIdx > -1 && (
                 <div className='fileinfo'>
-                  <div className='fileinfo-title'> Nama</div>
-                  <div className='fileinfo-content'> {this.state.workingFiles[this.state.activeIdx].result.name} </div>
-                  <div className='fileinfo-title'> Nomor Peserta</div>
-                  <div
-                      className='fileinfo-content'> {this.state.workingFiles[this.state.activeIdx].result.number} </div>
-                  <div className='fileinfo-title'> Jawaban</div>
-                  <div className='fileinfo-content'>
-                <pre>
-                  {this.state.workingFiles[this.state.activeIdx].result.answerShown}
-                </pre>
-                  </div>
+                  <div className='fileinfo-title'> Nama </div>
+                  <input
+                    className='fileinfo-content'
+                    value={this.state.workingFiles[this.state.activeIdx].result.name}
+                    name='name'
+                    onChange={this.handleChange}
+                  />
+                  <div className='fileinfo-title'> Nomor Peserta </div>
+                  <input
+                    className='fileinfo-content'
+                    value={this.state.workingFiles[this.state.activeIdx].result.number}
+                    name='number'
+                    onChange={this.handleChange}
+                  />
+                  <div className='fileinfo-title'> Jawaban </div>
+                  <textarea
+                    className='fileinfo-content'
+                    value={this.state.workingFiles[this.state.activeIdx].result.answer}
+                    name='answer'
+                    onChange={this.handleChange}
+                    cols={9}
+                    rows={12}
+                  />
                 </div>
             )}
             <div className='preview'>

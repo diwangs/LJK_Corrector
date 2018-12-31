@@ -98,16 +98,22 @@
   width: 30%;
   max-width: 200px;
   background-color: rgba(255, 255, 255, 1);
-  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 2px 2px 2px 1px rgba(235, 226, 226, 0.2);
   z-index: 2;
 }
 
 .fileinfo .fileinfo-title, .fileinfo .fileinfo-content {
-  padding: .75em;
+  margin: .75em;
 }
 
 .fileinfo .fileinfo-title {
   font-weight: 600;
+}
+
+.fileinfo .fileinfo-content {
+  padding: 5px;
+  border: none;
+  border-bottom: 1px solid;
 }
 
 .preview {
