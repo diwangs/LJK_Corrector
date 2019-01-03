@@ -25,6 +25,11 @@ export default class App extends Component {
       waitingForFiles: 0,
       activeIdx: -1,
       workingFiles: [],
+      modal: {
+        shown: false,
+        title: '',
+        content: '',
+      }
     };
   }
 
@@ -123,6 +128,78 @@ export default class App extends Component {
     });
   };
 
+  summonModal = (title, content) => {
+    this.setState((state, _) => ({
+      ...state,
+      modal: {
+        shown: true,
+        title: title,
+        content: content,
+      }
+    }));
+  };
+
+  summonHelpModal = () => {
+    let title = 'Cara Pakai';
+    let content = (
+      <div>
+        <ol>
+          <li> Download aplikasi CamScanner dari Play Store / App Store </li>
+          <li> Buka aplikasi CamScanner (ga harus bikin akun) </li>
+          <li> Klik kamera di kanan bawah </li>
+          <li> Ambil foto LJK. Pastikan: </li>
+          <ul>
+            <li> LJK tidak tertekuk / lingsut. </li>
+            <li> LJK difoto tegak (tidak terputar 90 / 180 derajat) </li>
+            <li> Semua sudut kertas terlihat </li>
+            <li> Jawaban peserta tidak memantulkan sinar (semuanya hitam) </li>
+          </ul>
+          <li> Atur supaya CamScanner bisa mendeteksi seluruh ujung kertas, lalu tekan check di kanan bawah </li>
+          <li> Pilih salah satu filter warna (bisa dicoba2 mana yang paling sesuai) </li>
+          <li> Save foto sebagai jpg, lalu upload di sini. </li>
+          <li> Tiap foto yang diupload akan diproses (biasanya 1 - 10 detik). Jika tidak ada progres, bisa lapor </li>
+          <li> Tiap hasil bisa diedit manual: </li>
+          <ul>
+            <li> Setiap lingkaran yang terdeteksi akan digambari kotak </li>
+            <li> Jika ada kesalahan, Anda dapat merubah manual </li>
+            <li> Jika gambar tidak ter-align dengan baik, Anda bisa menghapus dan mengupload ulang </li>
+          </ul>
+          <li> Terakhir, save sebagai CSV untuk diproses lebih lanjut (CSV bisa dibuka di Google Sheet, MS Excel, atau sejenisnya) </li>
+        </ol>
+        <p> Disclaimer: kami tidak bertanggung jawab jika ada kesalahan pengoreksian. Silakan dicoba-coba sebelum hari H, jadi hari H tidak terlalu bermasalah. </p>
+        <p>
+          Aplikasi ini dibangun menggunakan flask dan reactjs.
+          Jika di paguyuban Anda ada yang mampu, sangat disarankan untuk menjalankan aplikasi ini manual (karena di internet cukup lambat).
+          Download aplikasinya di <a href='https://github.com/diwangs/LJK_Corrector'>https://github.com/diwangs/LJK_Corrector</a>
+        </p>
+      </div>
+    );
+    this.summonModal(title, content);
+  };
+
+  summonCreditModal = () => {
+    let title = 'Credit';
+    let content = (
+      <div>
+        <p> Yonas Adiel (Karang Praga) </p>
+        <p> Senapati S. Diwangkara (Karang Praga) </p>
+        <p> Gery Wahyu (PKB Bali Dwipa) </p>
+      </div>
+    );
+    this.summonModal(title, content);
+  };
+
+  closeModal = () => {
+    this.setState((state, _) => ({
+      ...state,
+      modal: {
+        shown: false,
+        title: '',
+        content: '',
+      }
+    }))
+  }
+
   render() {
     let workingFiles = [];
     this.state.workingFiles.forEach((workingFile, idx) => {
@@ -140,7 +217,11 @@ export default class App extends Component {
     return (
         <div className='d-flex flex-col h-100'>
           <div className='flex-0 header'>
-            <div className='title'><strong>Korektor LJK TONAMPTN</strong> by Karang Praga ft. PKB Bali Dwipa </div>
+            <div className='title'>
+              <strong> Korektor LJK TONAMPTN </strong>
+              by
+              <span className='cursor-pointer' onClick={this.summonCreditModal}> Karang Praga ft. PKB Bali Dwipa </span>
+            </div>
             {this.state.waitingForFiles === 0 && (
                 <Dropzone onDrop={this.onDrop} multiple>
                   {({getRootProps, getInputProps, isDragActive}) => {
@@ -169,7 +250,10 @@ export default class App extends Component {
 
           <div className='d-flex flex-row flex-1 main'>
             <div className='filebars'>
-              <div className='filebars-title'> Files</div>
+              <div className='filebars-title'>
+                <strong> Files </strong>
+                <span className='cursor-pointer' onClick={this.summonHelpModal}> (butuh bantuan?) </span>
+              </div>
               <div className='filebars-action'>
                 <div onClick={this.onSaveAsCsvButtonClick}> Save as CSV</div>
                 <div className='danger' onClick={this.onDeleteButtonClick}> Delete Selected</div>
@@ -216,6 +300,17 @@ export default class App extends Component {
               )}
             </div>
           </div>
+          {this.state.modal.shown && (<div className='modal-container' onClick={this.closeModal}>
+            <div className='modal-content'>
+              <div className='modal-header'>
+                {this.state.modal.title}
+                <div className='modal-close'></div>
+              </div>
+              <div className='modal-body'>
+                {this.state.modal.content}
+              </div>
+            </div>
+          </div>)}
 
         </div>
     );
