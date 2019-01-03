@@ -30,13 +30,16 @@ export default class App extends Component {
 
   getCsvFromFiles = (files) => {
     let result = '';
+    result += 'no peserta,nama';
+    for (let i = 1; i <= 120; i++) {
+      result += ',' + i;
+    }
+    result += '\n';
     files.forEach((file) => {
       let arrAnswer = file.result.answer.split('');
-      let counter = 0;
+      result += file.result.number + ',' + file.result.name;
       arrAnswer.forEach((answer) => {
-        if (counter > 0) result += ',';
-        result += answer;
-        counter++;
+        result += ',' + answer;
       });
       result += '\n';
     });
