@@ -29,16 +29,16 @@ export default class App extends Component {
   }
 
   getCsvFromFiles = (files) => {
-    let result = "";
+    let result = '';
     files.forEach((file) => {
-      let arrAnswer = file.result.answer.split("");
+      let arrAnswer = file.result.answer.split('');
       let counter = 0;
       arrAnswer.forEach((answer) => {
-        if (counter > 0) result += ",";
+        if (counter > 0) result += ',';
         result += answer;
         counter++;
       });
-      result += "\n";
+      result += '\n';
     });
     return result;
   };
@@ -104,7 +104,7 @@ export default class App extends Component {
 
   onSaveAsCsvButtonClick = (e) => {
     let csv = this.getCsvFromFiles(this.state.workingFiles);
-    this.downloadCsv(csv, "jawaban.csv");
+    this.downloadCsv(csv, 'jawaban.csv');
   };
 
   handleChange = (e) => {
