@@ -140,7 +140,7 @@ export default class App extends Component {
     return (
         <div className='d-flex flex-col h-100'>
           <div className='flex-0 header'>
-            <div className='title'><strong>Korektor LJK TONAMPTN</strong> by Karang Praga</div>
+            <div className='title'><strong>Korektor LJK TONAMPTN</strong> by Karang Praga ft. PKB Bali Dwipa </div>
             {this.state.waitingForFiles === 0 && (
                 <Dropzone onDrop={this.onDrop} multiple>
                   {({getRootProps, getInputProps, isDragActive}) => {
