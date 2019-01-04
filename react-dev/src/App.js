@@ -42,9 +42,14 @@ export default class App extends Component {
     result += '\n';
     files.forEach((file) => {
       let arrAnswer = file.result.answer.split('');
-      result += file.result.number + ',' + file.result.name;
+      result += file.result.number.replace('_', ' ') + ',' + file.result.name.replace('_', ' ');
       arrAnswer.forEach((answer) => {
-        result += ',' + answer;
+        result += ',';
+        if (answer === '_') {
+          result += ' ';
+        } else {
+          result += answer;
+        }
       });
       result += '\n';
     });
