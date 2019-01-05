@@ -89,7 +89,14 @@ export default class App extends Component {
                   result: data,
                 }
               ]
-            }))
+            }));
+          })
+          .catch((err) => {
+            console.log(err);
+            this.setState((state, _) => ({
+              ...state,
+              waitingForFiles: state.waitingForFiles - 1,
+            }));
           });
     });
   };
